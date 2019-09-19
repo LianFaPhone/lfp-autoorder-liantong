@@ -124,21 +124,21 @@ func Init() error {
 		ZapLog().Sugar().Error("mkdir %v err %v", GConfig.Server.PicPath, err)
 		return err
 	}
-	AllExcel, err = NewExcel("", GConfig.Server.OutputPath + "/all-"+timeNowStr+".xlsx")
+	AllExcel, err = NewExcel("", GConfig.Server.OutputPath + "\\all-"+timeNowStr+".xlsx")
 	if err != nil {
 		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/all-"+timeNowStr+".xlsx", err)
 		return err
 	}
 
-	SecondExcel, err = NewExcel("", GConfig.Server.OutputPath + "/second-"+timeNowStr+".xlsx")
+	SecondExcel, err = NewExcel("", GConfig.Server.OutputPath + "\\second-"+timeNowStr+".xlsx")
 	if err != nil {
 		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/second-"+timeNowStr+".xlsx", err)
 		return err
 	}
 
-	SuccExcel, err = NewExcel("", GConfig.Server.OutputPath + "/success-"+timeNowStr+".xlsx")
+	SuccExcel, err = NewExcel("", GConfig.Server.OutputPath + "\\success-"+timeNowStr+".xlsx")
 	if err != nil {
-		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/success-"+timeNowStr+".xlsx", err)
+		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "\\success-"+timeNowStr+".xlsx", err)
 		return err
 	}
 	FailExcel, err = NewExcel("", GConfig.Server.OutputPath + "/fail-"+timeNowStr+".xlsx")
