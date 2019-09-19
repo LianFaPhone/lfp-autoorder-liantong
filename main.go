@@ -28,6 +28,7 @@ import (
 var AllExcel    *Excel
 var SecondExcel *Excel
 var SuccExcel   *Excel
+var FailExcel   *Excel
 var timeNowStr  string
 
 func PanicPrint() {
@@ -50,7 +51,7 @@ func main() {
 
 	ZapLog().Sugar().Infof("******************Config shopNname[%s] cardTp[%s], and sleep 5 second to continue", GPreConfig.NowShopUrl.Name, GConfig.Server.CardId)
 	time.Sleep(time.Second * 5)
-	timeNowStr = time.Now().Format("2006-01-02-150405")
+	timeNowStr = time.Now().Format("2006-01-02-15-04-05")
 	if err := Init(); err != nil {
 		//老文件文件名改成日期
 		ZapLog().Sugar().Errorf("Init err %v,  so exist",err)
@@ -119,21 +120,21 @@ func Init() error {
 		ZapLog().Sugar().Error("mkdir %v err %v", GConfig.Server.PicPath, err)
 		return err
 	}
-	AllExcel, err = NewExcel("", GConfig.Server.OutputPath + "/all"+timeNowStr+".xlsx")
+	AllExcel, err = NewExcel("", GConfig.Server.OutputPath + "/all-"+timeNowStr+".xlsx")
 	if err != nil {
-		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/all"+timeNowStr+".xlsx", err)
+		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/all-"+timeNowStr+".xlsx", err)
 		return err
 	}
 
-	SecondExcel, err = NewExcel("", GConfig.Server.OutputPath + "/second"+timeNowStr+".xlsx")
+	SecondExcel, err = NewExcel("", GConfig.Server.OutputPath + "/second-"+timeNowStr+".xlsx")
 	if err != nil {
-		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/second"+timeNowStr+".xlsx", err)
+		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/second-"+timeNowStr+".xlsx", err)
 		return err
 	}
 
-	SuccExcel, err = NewExcel("", GConfig.Server.OutputPath + "/success"+timeNowStr+".xlsx")
+	SuccExcel, err = NewExcel("", GConfig.Server.OutputPath + "/success-"+timeNowStr+".xlsx")
 	if err != nil {
-		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/success"+timeNowStr+".xlsx", err)
+		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/success-"+timeNowStr+".xlsx", err)
 		return err
 	}
 
@@ -203,7 +204,10 @@ func Work(colnames []string, sheet *xlsx.Sheet) error {
 		inAddress := row.Cells[8].String()
 		//inStreet := row.Cells[7].String()
 		quIndex :=  strings.Index(inAddress, inQuName)
-		inAddress = inAddress[quIndex+len(inQuName):]
+		if quIndex >= 0 {
+			inAddress = inAddress[quIndex+len(inQuName):]
+		}
+
 		excelArr := CellsToArr(row.Cells, CardType.Name)
 		certAddr := inCityName+inQuName+inAddress
 		fmt.Println("\n============================================")
@@ -301,7 +305,7 @@ func Work(colnames []string, sheet *xlsx.Sheet) error {
 			time.Sleep(time.Millisecond * time.Duration(GConfig.Server.Intvl))
 		}
 	}
-	ZapLog().Sugar().Infof("**********AllRecords[%v] SuccessRecords[%v] FailRecords[%v] ", AllRecords, SuccessRecords, FailRecords)
+	ZapLog().Sugar().Infof("****The End**********AllRecords[%v] SuccessRecords[%v] FailRecords[%v] ", AllRecords, SuccessRecords, FailRecords)
 	return nil
 }
 
