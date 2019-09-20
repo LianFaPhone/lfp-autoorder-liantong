@@ -9,9 +9,9 @@ import (
 	. "LianFaPhone/lfp-base/log/zap"
 	. "LianFaPhone/lfp-autoorder-liantong/config"
 	"time"
-	"os/exec"
 	"github.com/tealeg/xlsx"
 	"strings"
+	"os"
 )
 //
 //func main(){
@@ -46,6 +46,9 @@ func main() {
 	LoadConfig(*cfgPath)
 	LoadZapConfig(*logPath)
 	ZapLog().Sugar().Infof("Config Content[%v]", GConfig)
+	defer func(){
+		time.Sleep(10 * time.Second)
+	}()
 	defer ZapClose()
 	defer PanicPrint()
 
@@ -100,14 +103,19 @@ func main() {
 	}
 	//输出文件
 
-	ZapLog().Sugar().Info("\n\n**************Success done*****************")
+	ZapLog().Sugar().Infof("\n\n*******Well*******Success done*****************")
+	fmt.Println("*******Well*******Success done*****************")
+	fmt.Println("*******Success done*****************")
+	fmt.Println("*******Success done*****")
+	fmt.Println("*******Success done*****")
 }
 
 func Init() error {
-	cmd := exec.Command("mkdir", "-p", GConfig.Server.OutputPath)
-	err := cmd.Run()
+	err := os.MkdirAll(GConfig.Server.OutputPath, os.ModePerm)
+	//cmd := exec.Command("mkdir", "-p", GConfig.Server.OutputPath)
+	//err := cmd.Run()
 	if err != nil {
-		ZapLog().Sugar().Error("mkdir %v err %v", GConfig.Server.OutputPath, err)
+		ZapLog().Sugar().Errorf("mkdir %v err %v", GConfig.Server.OutputPath, err)
 		return err
 	}
 
@@ -118,32 +126,33 @@ func Init() error {
 	//	return err
 	//}
 
-	cmd = exec.Command("mkdir", "-p", GConfig.Server.PicPath)
-	err = cmd.Run()
+	err = os.MkdirAll(GConfig.Server.PicPath, os.ModePerm)
+	//cmd = exec.Command("mkdir", "-p", GConfig.Server.PicPath)
+	//err = cmd.Run()
 	if err != nil {
-		ZapLog().Sugar().Error("mkdir %v err %v", GConfig.Server.PicPath, err)
+		ZapLog().Sugar().Errorf("mkdir %v err %v", GConfig.Server.PicPath, err)
 		return err
 	}
 	AllExcel, err = NewExcel("", GConfig.Server.OutputPath + "/all-"+timeNowStr+".xlsx")
 	if err != nil {
-		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/all-"+timeNowStr+".xlsx", err)
+		ZapLog().Sugar().Errorf("NewExcel %v err %v", GConfig.Server.OutputPath + "/all-"+timeNowStr+".xlsx", err)
 		return err
 	}
 
 	SecondExcel, err = NewExcel("", GConfig.Server.OutputPath + "/second-"+timeNowStr+".xlsx")
 	if err != nil {
-		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/second-"+timeNowStr+".xlsx", err)
+		ZapLog().Sugar().Errorf("NewExcel %v err %v", GConfig.Server.OutputPath + "/second-"+timeNowStr+".xlsx", err)
 		return err
 	}
 
 	SuccExcel, err = NewExcel("", GConfig.Server.OutputPath + "/success-"+timeNowStr+".xlsx")
 	if err != nil {
-		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/success-"+timeNowStr+".xlsx", err)
+		ZapLog().Sugar().Errorf("NewExcel %v err %v", GConfig.Server.OutputPath + "/success-"+timeNowStr+".xlsx", err)
 		return err
 	}
 	FailExcel, err = NewExcel("", GConfig.Server.OutputPath + "/fail-"+timeNowStr+".xlsx")
 	if err != nil {
-		ZapLog().Sugar().Error("NewExcel %v err %v", GConfig.Server.OutputPath + "/fail-"+timeNowStr+".xlsx", err)
+		ZapLog().Sugar().Errorf("NewExcel %v err %v", GConfig.Server.OutputPath + "/fail-"+timeNowStr+".xlsx", err)
 		return err
 	}
 
@@ -180,13 +189,13 @@ func Work(colnames []string, sheet *xlsx.Sheet) error {
 
 	orderTpCode,err := new(ReOrderType).Get()
 	if err != nil {
-		ZapLog().Sugar().Error("ReOrderType.Get error %v, so exist", err)
+		ZapLog().Sugar().Errorf("ReOrderType.Get error %v, so exist", err)
 		return err
 	}
 
 	CardType, ok := GPreConfig.CardTypeMap[GConfig.Server.CardId]
 	if !ok {
-		ZapLog().Sugar().Error("CardTypeMap nofind error, so exist")
+		ZapLog().Sugar().Errorf("CardTypeMap nofind error, so exist")
 		return fmt.Errorf("CardTypeMap nofind error")
 	}
 
@@ -248,10 +257,10 @@ func Work(colnames []string, sheet *xlsx.Sheet) error {
 			ZapLog().Sugar().Errorf("ReCardSearch.Send %v err=%v",orderTpCode, err)
 			excelArr = append(excelArr, "网络问题", err.Error())
 			if err2 := AllExcel.Append(excelArr); err2 != nil {
-				ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+				ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 			}
 			if err2 := FailExcel.Append(excelArr); err2 != nil {
-				ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+				ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 			}
 			FailRecords++
 			continue
@@ -273,12 +282,12 @@ func Work(colnames []string, sheet *xlsx.Sheet) error {
 		}
 		if !oneFlag {
 			ZapLog().Sugar().Errorf("ReCloseNumber fail")
-			excelArr = append(excelArr, "占号失败")
+			excelArr = append(excelArr, "占号失败", "占号失败")
 			if err2 := AllExcel.Append(excelArr); err2 != nil {
-				ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+				ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 			}
 			if err2 := FailExcel.Append(excelArr); err2 != nil {
-				ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+				ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 			}
 			FailRecords++
 			continue
@@ -292,19 +301,19 @@ func Work(colnames []string, sheet *xlsx.Sheet) error {
 
 			excelArr = append(excelArr, errMsg, err.Error())
 			if err2 := AllExcel.Append(excelArr); err2 != nil {
-				ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+				ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 			}
 			if err2 := FailExcel.Append(excelArr); err2 != nil {
-				ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+				ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 			}
 			if succFlag{
 				if err2 := SuccExcel.Append(excelArr); err2 != nil {
-					ZapLog().Sugar().Error("SuccExcel.Append error %v", err2)
+					ZapLog().Sugar().Errorf("SuccExcel.Append error %v", err2)
 				}
 			}
 			if secondFlag {
 				if err2 := SecondExcel.Append(excelArr); err2 != nil {
-					ZapLog().Sugar().Error("SecondExcel.Append error %v", err2)
+					ZapLog().Sugar().Errorf("SecondExcel.Append error %v", err2)
 				}
 			}
 			FailRecords++
@@ -312,10 +321,10 @@ func Work(colnames []string, sheet *xlsx.Sheet) error {
 		}else{
 			excelArr = append(excelArr, zanPhone, "成功")
 			if err2 := AllExcel.Append(excelArr); err2 != nil {
-				ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+				ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 			}
 			if err2 := SuccExcel.Append(excelArr); err2 != nil {
-				ZapLog().Sugar().Error("SuccExcel.Append error %v", err2)
+				ZapLog().Sugar().Errorf("SuccExcel.Append error %v", err2)
 			}
 			ZapLog().Sugar().Infof("**********ReOrderSubmit Success,order[%s]newPhone [%v]",orderId, zanPhone)
 		}
@@ -357,10 +366,10 @@ func VerifyXingMing(inXinMing, inIdCard string, excelArr []string) bool {
 		ZapLog().Sugar().Errorf("ReOrderType.Get error %v %v", err, msg)
 		excelArr = append(excelArr, "网络问题", msg)
 		if err2 := AllExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 		}
 		if err2 := FailExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 		}
 		return false
 	}
@@ -368,10 +377,10 @@ func VerifyXingMing(inXinMing, inIdCard string, excelArr []string) bool {
 		ZapLog().Sugar().Errorf("name and idcard not verified, %v", msg)
 		excelArr = append(excelArr, "身份证校验失败", msg)
 		if err2 := AllExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("AllExcel.Append error %v", err)
+			ZapLog().Sugar().Errorf("AllExcel.Append error %v", err)
 		}
 		if err2 := FailExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 		}
 		return false
 	}
@@ -384,10 +393,10 @@ func GetAreaCode(inProName,inCityName,inQuName string, excelArr []string) (strin
 		excelArr = append(excelArr, "地址未找到", "省")
 		ZapLog().Sugar().Errorf("nofind provice")
 		if err2 := AllExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 		}
 		if err2 := FailExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 		}
 		return "","","",false
 	}
@@ -397,10 +406,10 @@ func GetAreaCode(inProName,inCityName,inQuName string, excelArr []string) (strin
 		ZapLog().Sugar().Errorf("ReqArea.Get MALL_SHIP_CLOUD_AREA %v err=%v",proCode, err)
 		excelArr = append(excelArr, "网络问题", err.Error())
 		if err2 := AllExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 		}
 		if err2 := FailExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 		}
 		return "","","",false
 	}
@@ -410,10 +419,10 @@ func GetAreaCode(inProName,inCityName,inQuName string, excelArr []string) (strin
 		ZapLog().Sugar().Errorf("city nofind %v",inCityName)
 		excelArr = append(excelArr, "地址未找到", "市")
 		if err2 := AllExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 		}
 		if err2 := FailExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 		}
 		return "","","",false
 	}
@@ -423,10 +432,10 @@ func GetAreaCode(inProName,inCityName,inQuName string, excelArr []string) (strin
 		ZapLog().Sugar().Errorf("ReqArea.Get MALL_SHIP_CLOUD_COUNTY %v err=%v",cityCode, err)
 		excelArr = append(excelArr, "网络问题", err.Error())
 		if err2 := AllExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 		}
 		if err2 := FailExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 		}
 		return "","","",false
 	}
@@ -436,10 +445,10 @@ func GetAreaCode(inProName,inCityName,inQuName string, excelArr []string) (strin
 		ZapLog().Sugar().Errorf("qu nofind %v",inQuName)
 		excelArr = append(excelArr, "地址未找到", "区")
 		if err2 := AllExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("AllExcel.Append error %v", err2)
 		}
 		if err2 := FailExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
+			ZapLog().Sugar().Errorf("FailExcel.Append error %v", err2)
 		}
 		return "","","",false
 	}
