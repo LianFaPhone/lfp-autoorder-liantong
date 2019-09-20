@@ -211,10 +211,15 @@ func Work(colnames []string, sheet *xlsx.Sheet) error {
 		inQuName := row.Cells[6].String()
 		inPhone := row.Cells[3].String()
 		inAddress := row.Cells[8].String()
-		//inStreet := row.Cells[7].String()
+		inStreet := row.Cells[7].String()
 		quIndex :=  strings.Index(inAddress, inQuName)
 		if quIndex >= 0 {
 			inAddress = inAddress[quIndex+len(inQuName):]
+		}else{
+			streetIndex :=  strings.Index(inAddress, inStreet)
+			if streetIndex  < 0 {
+				inAddress = inStreet+inAddress
+			}
 		}
 
 		excelArr := CellsToArr(row.Cells, CardType.Name)
@@ -352,7 +357,7 @@ func VerifyXingMing(inXinMing, inIdCard string, excelArr []string) bool {
 		ZapLog().Sugar().Errorf("ReOrderType.Get error %v %v", err, msg)
 		excelArr = append(excelArr, "网络问题", msg)
 		if err2 := AllExcel.Append(excelArr); err2 != nil {
-			ZapLog().Sugar().Error("AllExcel.Append error %v", err)
+			ZapLog().Sugar().Error("AllExcel.Append error %v", err2)
 		}
 		if err2 := FailExcel.Append(excelArr); err2 != nil {
 			ZapLog().Sugar().Error("FailExcel.Append error %v", err2)
